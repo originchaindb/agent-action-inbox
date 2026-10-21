@@ -1,0 +1,4 @@
+{
+  "request_id": "synthetic-export-report-001",
+  "report": "Synthetic demo: In our staging app, Export CSV downloads all records while a date filter is active. Expected only filtered rows. Reproduced twice with sample data in Chrome. The exact build and step-by-step reproduction still need confirmation. No customer data is included."
+}

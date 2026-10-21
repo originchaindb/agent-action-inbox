@@ -1,0 +1,25 @@
+[Unit]
+Description=Agent Action Inbox
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=agent-inbox
+Group=agent-inbox
+WorkingDirectory=/opt/agent-action-inbox
+EnvironmentFile=/etc/agent-action-inbox.env
+ExecStart=/opt/agent-action-inbox/inbox -env /dev/null
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=145
+KillSignal=SIGINT
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictSUIDSGID=yes
+ReadOnlyPaths=/opt/agent-action-inbox
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Agent Action Inbox · OriginChainDB</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/"
+        >OriginChainDB <span>/ Agent Action Inbox</span></a
+      ><span class="tag">Human review first</span>
+    </header>
+    <main>
+      <section id="login" class="panel login">
+        <p class="eyebrow">REVIEW WORKSPACE</p>
+        <h1>A pause before the action.</h1>
+        <p>
+          Review AI issue drafts, make corrections, and decide what reaches
+          GitHub.
+        </p>
+        <form id="login-form">
+          <label for="access-key">Reviewer access key</label
+          ><input
+            id="access-key"
+            type="password"
+            autocomplete="off"
+            required
+            placeholder="REVIEWER_TOKEN from your server configuration"
+          /><button type="submit">Open inbox</button>
+        </form>
+        <p class="muted">
+          The key stays in this tab’s memory. Reloading signs you out.
+        </p>
+      </section>
+      <div id="workspace" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">REVIEW WORKSPACE</p>
+            <h1>Agent Action Inbox</h1>
+            <p>Draft → review → approve → create issue.</p>
+          </div>
+          <button id="logout" class="secondary">Lock workspace</button>
+        </div>
+        <nav aria-label="Workspace">
+          <button id="inbox-tab" aria-current="page">Inbox</button
+          ><button id="settings-tab" class="secondary">Settings</button
+          ><button id="refresh" class="secondary">Refresh</button>
+        </nav>
+        <section id="settings" class="panel" hidden>
+          <h2>Connections</h2>
+          <p>
+            Current server settings. API credentials are never returned to this
+            page.
+          </p>
+          <dl id="connection-list"></dl>
+          <p class="muted">
+            A configured AI key is not proof of a successful request. Each draft
+            records its result. Change configuration on the server, then restart
+            it.
+          </p>
+        </section>
+        <div id="inbox-view">
+          <details class="panel new-proposal" id="new-proposal">
+            <summary>New proposal</summary>
+            <form id="proposal-form">
+              <div class="form-heading">
+                <label for="report">Bug report</label
+                ><button id="example" type="button" class="text-button">
+                  Use synthetic example
+                </button>
+              </div>
+              <textarea
+                id="report"
+                rows="5"
+                required
+                maxlength="12000"
+                placeholder="What happened? What did you expect? Include only information you can share with your AI provider."
+              ></textarea>
+              <details>
+                <summary>Submit a draft you already have</summary>
+                <p class="muted">
+                  For an external agent or a manual review. This makes no AI
+                  request.
+                </p>
+                <label class="checkbox"
+                  ><input type="checkbox" id="manual" /> Use my draft</label
+                ><label for="manual-title">Issue title</label
+                ><input id="manual-title" maxlength="180" /><label
+                  for="manual-body"
+                  >Issue body</label
+                ><textarea
+                  id="manual-body"
+                  rows="5"
+                  maxlength="12000"
+                ></textarea>
+              </details>
+              <div class="form-footer">
+                <button type="submit" id="submit-proposal">
+                  Draft with Claude</button
+                ><span class="muted" id="draft-destination"
+                  >AI drafts require separate API access.</span
+                >
+              </div>
+            </form>
+          </details>
+          <div class="columns">
+            <section class="panel queue">
+              <div class="queue-heading">
+                <h2>Recent actions</h2>
+                <span id="count" class="tag">0</span>
+              </div>
+              <label class="sr-only" for="filter">Filter actions</label
+              ><select id="filter">
+                <option value="all">All states</option>
+                <option value="proposed">Needs review</option>
+                <option value="approved">Approved</option>
+                <option value="succeeded">Completed</option>
+                <option value="uncertain">Needs reconciliation</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <div id="action-list"></div>
+              <p class="muted small">
+                Latest 50 actions. All decisions remain in the database.
+              </p>
+            </section>
+            <section
+              class="panel review"
+              id="review"
+              aria-label="Action details"
+            >
+              <div class="empty">
+                <h2>Your review starts here</h2>
+                <p>
+                  Select an action to inspect its report, proposed issue, and
+                  history.
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <p id="notice" role="status" aria-live="polite" hidden></p>
+    </main>
+    <footer>
+      Built with Go · Claude or OpenAI · OriginChainDB Cloud
+      <span>One workspace. One GitHub repository.</span>
+    </footer>
+  </body>
+</html>

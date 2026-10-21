@@ -1,0 +1,33 @@
+name: Starter checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+      - run: go mod verify
+      - run: test -z "$(gofmt -l cmd internal)"
+      - run: go vet ./...
+      - run: go test -race -count=1 -cover ./...
+      - run: go build ./cmd/inbox
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check internal/inbox/web/app.js
+      - name: Confirm local secrets and build artifacts are untracked
+        run: |
+          git ls-files -z | while IFS= read -r -d '' file; do
+            case "$file" in
+              .env.example) ;;
+              .env|.env.*|*/.env|*/.env.*|.local/*|bin/*|*.exe)
+                echo 'Unexpected private or build artifact in the repository.'
+                exit 1 ;;
+            esac
+          done

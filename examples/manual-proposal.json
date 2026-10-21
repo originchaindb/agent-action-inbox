@@ -1,0 +1,9 @@
+{
+  "request_id": "synthetic-manual-report-001",
+  "report": "Synthetic demo: A staging CSV export appears to ignore its active date filter. Build and reproduction details are not yet confirmed.",
+  "draft": {
+    "title": "CSV export appears to ignore the selected date range",
+    "body": "## Observed behavior\nThe report says a staging export includes records outside the selected date range.\n\n## Expected behavior\nOnly matching records should be exported.\n\n## Reproduction\nNot yet independently confirmed.\n\n## Missing information\nAffected build, exact steps, and a sample dataset.",
+    "rationale": "Verify reproduction before publishing. This proposal contains synthetic information only."
+  }
+}
