@@ -37,11 +37,6 @@ a {
   text-decoration: none;
   font-weight: 750;
 }
-.brand span {
-  font-weight: 450;
-  color: var(--muted);
-  margin-left: 0.5rem;
-}
 main {
   max-width: 1280px;
   margin: auto;
@@ -402,11 +397,6 @@ summary:focus-visible {
 @media (max-width: 800px) {
   .columns {
     grid-template-columns: 1fr;
-  }
-  .brand span {
-    display: block;
-    margin: 0;
-    font-size: 0.8rem;
   }
   header > .tag {
     display: none;

@@ -50,6 +50,8 @@ Linux CI runs `go test -race` as well as formatting, module verification, vet, b
 
 ## Browser evidence and boundaries
 
+After the live test, the page title, header, and footer were updated to neutral Agent Action Inbox branding. The embedded application build and served HTML were checked, and Chrome showed the updated sign-in page. The live-test screenshots below retain the earlier appearance; they have not been relabeled as screenshots of the updated interface.
+
 Chrome verified reviewer sign-in, real database connection settings, Claude model and three-attempt ceiling, draft review/edit/approval, completed issue link, history, rejection, and state after a process restart. The screenshots show actual application data from this test. Earlier UI checks also exercised a clearly labeled test-only in-memory harness; those are not the evidence for cloud connectivity.
 
 Responsive viewport checks, production TLS/proxy deployment, backups, and container execution have not been verified. This remains a single-writer internal-tool starter, with shared reviewer-role credentials and no distributed transaction spanning GitHub and the database.

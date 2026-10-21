@@ -4,7 +4,7 @@ A small Go service that turns bug reports into **reviewable GitHub issue proposa
 
 **Verified on 21 October 2026:** real Claude API drafting, OriginChainDB **Cloud Free** persistence, and an approved [GitHub issue](https://github.com/originchaindb/agent-action-inbox/issues/1). Restart, rejection, duplicate-execution, and reconciliation checks passed. See the [test report](docs/VERIFICATION.md) and [sanitized receipt](docs/live-verification.json). The application was run locally against cloud services; there is no hosted public demo yet.
 
-![Completed Claude proposal in the live cloud-backed review inbox](docs/live-inbox.jpg)
+The interface is a neutral **Agent Action Inbox** workspace. Database and model details appear in Settings. Screenshots in the verification report document the earlier live test and retain its original appearance.
 
 ## Why build this?
 
