@@ -85,7 +85,7 @@ func Handler(c Config, s *Service) http.Handler {
 			if probeErr != nil {
 				dbStatus = "unavailable"
 			}
-			value = map[string]any{"database": databaseName, "database_status": dbStatus, "namespace": c.Namespace, "provider": c.Provider, "model": c.Model, "ai_configured": c.AIKey != "" && c.Model != "", "repository": c.Repository, "execution_enabled": c.Execute, "github_configured": c.GitHubToken != "", "list_limit": 50}
+			value = map[string]any{"database": databaseName, "database_status": dbStatus, "namespace": c.Namespace, "provider": c.Provider, "model": c.Model, "ai_configured": c.AIKey != "" && c.Model != "", "ai_request_limit": c.AIRequestLimit, "repository": c.Repository, "execution_enabled": c.Execute, "github_configured": c.GitHubToken != "", "list_limit": 50}
 		case r.URL.Path == "/api/actions" && r.Method == "GET":
 			value, err = s.List(r.Context())
 		case r.URL.Path == "/api/actions" && r.Method == "POST":

@@ -296,6 +296,7 @@ function renderSettings() {
     ["Namespace", settings.namespace],
     ["AI provider", settings.provider],
     ["Model", settings.model || "Not configured"],
+    ["AI request ceiling", String(settings.ai_request_limit) + " attempts (including failures)"],
     [
       "AI credentials",
       settings.ai_configured

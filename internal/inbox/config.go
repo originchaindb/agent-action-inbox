@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,8 @@ type Config struct {
 	DBURL, Tenant, Bearer, DBUser, DBKey, Namespace string
 	Provider, Model, AIKey, Repository, GitHubToken string
 	Execute                                         bool
+	AIRequestLimit                                  int
+	AIRequestLedger                                 string
 }
 
 // LoadEnv supports plain KEY=value and matching quotes, without interpolation or shell execution.
@@ -65,6 +68,12 @@ func env(key, fallback string) string {
 
 func ReadConfig() (Config, error) {
 	c := Config{Addr: env("APP_ADDR", "127.0.0.1:8087"), Origin: env("APP_ORIGIN", "http://127.0.0.1:8087"), ReviewerToken: os.Getenv("REVIEWER_TOKEN"), AgentToken: os.Getenv("AGENT_TOKEN"), DBURL: strings.TrimRight(os.Getenv("OC_BASE_URL"), "/"), Tenant: os.Getenv("OC_TENANT"), Bearer: os.Getenv("OC_BEARER"), DBUser: os.Getenv("OC_DB_USER"), DBKey: os.Getenv("OC_DB_KEY"), Namespace: env("OC_NAMESPACE", "agent_inbox"), Provider: env("AI_PROVIDER", "claude"), Model: os.Getenv("AI_MODEL"), Repository: os.Getenv("GITHUB_REPOSITORY"), GitHubToken: os.Getenv("GITHUB_TOKEN"), Execute: os.Getenv("ENABLE_GITHUB_EXECUTION") == "true"}
+	limit, err := strconv.Atoi(env("AI_REQUEST_LIMIT", "3"))
+	if err != nil || limit < 1 || limit > 1000 {
+		return c, errors.New("AI_REQUEST_LIMIT must be an integer from 1 to 1000")
+	}
+	c.AIRequestLimit = limit
+	c.AIRequestLedger = env("AI_REQUEST_LEDGER", ".local/ai-requests.json")
 	if c.Provider == "claude" {
 		c.AIKey = os.Getenv("ANTHROPIC_API_KEY")
 	} else if c.Provider == "openai" {

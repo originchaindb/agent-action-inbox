@@ -1,10 +1,38 @@
-# Verification status — 21 October 2026
+# Verification results — 21 October 2026
 
-This report distinguishes local checks from real service tests. It does not inherit the verification status of the separate Python Support Copilot project.
+**Real Claude + OriginChainDB Cloud Free + GitHub passed.** The Go app ran on a local Windows host against actual cloud APIs. No local database substituted for Cloud Free. The cloud console separately confirmed **Free**, **Running**, and **No charge**; the data API alone cannot establish the account's plan.
 
-## Completed locally
+Evidence: [synthetic GitHub issue #1](https://github.com/originchaindb/agent-action-inbox/issues/1), [sanitized live receipt](live-verification.json), [inbox screenshot](live-inbox.jpg), and [decision history screenshot](live-history.jpg). All submitted reports were invented test data, with no customer information.
 
-Environment: Windows, Go 1.26.2. Commands:
+## Real-service checks
+
+| Check | Observed result |
+| --- | --- |
+| Cloud Free schema / rows / SQL | Schema creation and reuse, row insert/update, duplicate request handling, and SQL listing passed |
+| Claude structured draft | Two successful requests using `claude-haiku-4-5-20251001` |
+| Browser review and GitHub execution | Edited and approved a real Claude draft, then created exactly one issue through the app |
+| Approval integrity | GitHub title/body matched the saved approved revision, plus the action marker |
+| Rejection and permissions | Rejected action could not execute; agent access could neither approve nor read the inbox |
+| Duplicate protection | Reused request ID returned the original action; repeated execution was blocked; one demo issue observed |
+| Process restart | Stopped and restarted the compiled server; completed/rejected actions and history remained |
+| Lost-result reconciliation | Isolated simulated missing-result record reconciled using a real GitHub marker read and real Cloud Free persistence; no second issue creation |
+| Persistent AI ceiling | The two reserved attempts remained after restart |
+| OpenAI API | Adapter tested with local HTTP fixtures only; no live OpenAI call |
+| Production host / container | Not deployed; Docker daemon unavailable on the development host |
+
+The lost-result test deliberately copied the completed action into a fresh recovery namespace and removed its result there. The original action was unchanged. This verifies reconciliation against live services; it does **not** claim an actual network interruption was forced during issue creation.
+
+The model suggested a reproduction sequence that the source report had not confirmed. The reviewer removed it and added an explicit synthetic-demo label before approval. Both revisions remain in the action history. Successful structured output does not establish factual correctness.
+
+## Claude usage and limit
+
+The two requests consumed **790 input tokens and 742 output tokens**. At the documented Haiku 4.5 rates of $1 per million input tokens and $5 per million output tokens, estimated token cost was **$0.0045**, below the requested **$10** ceiling. This is a token-cost estimate, not an invoice or tax calculation. [Model details](https://platform.claude.com/docs/en/models/haiku-4-5/overview), [pricing](https://platform.claude.com/docs/en/about-claude/pricing).
+
+The app was configured for a persistent ceiling of **three provider attempts**, reserves attempts before sending requests, and never automatically retries them. Exactly two were used. The fixed model, bounded input/output, and limited requests kept this verification within budget. This request counter is **not** general dollar accounting and cannot control other clients using the same account. No account-wide billing setting was changed; configure a dedicated [Claude workspace spend limit](https://platform.claude.com/docs/en/manage-claude/workspaces) for ongoing billing enforcement.
+
+## Local automated checks
+
+Environment: Windows, Go 1.26.2.
 
 ```sh
 go test ./... -count=1 -cover
@@ -14,52 +42,21 @@ go mod verify
 node --check internal/inbox/web/app.js
 ```
 
-All passed. The `internal/inbox` package reported **77.0% statement coverage**. The command entry points are compiled but not covered by that package's tests. A separate `GOOS=linux GOARCH=amd64 CGO_ENABLED=0` cross-build also succeeded; the Linux binary has not been run on a production host.
+All passed. `internal/inbox` reported **77.7% statement coverage**. Command entry points compile but are not covered by that package's tests. A Linux cross-build also succeeded; the Linux binary has not been deployed to a production host.
 
-The publication candidates were checked against configured local secret values, private cloud identifiers, and common credential patterns. No matches were found. The local `.env`, build outputs, and Go caches are ignored by Git. This check does not replace the final scan after live testing.
+Focused tests cover role authorization, host/origin validation, sanitized settings, request/body limits, stable request IDs, stale reviews, edit-revokes-approval behavior, concurrent execution, provider refusals/truncation/malformed output, schema compatibility, database failures, uncertain external results, and reconciliation. Durable request-budget tests cover restarts, exhausted budgets, concurrent reservation, corrupt files, and lock failures. Claude/OpenAI and database adapter contract tests use local HTTP fixtures.
 
-The tests verify:
+Linux CI runs `go test -race` as well as formatting, module verification, vet, build, JavaScript syntax, and private-file exclusion checks. See [workflow runs](https://github.com/originchaindb/agent-action-inbox/actions/workflows/ci.yml). The Windows host has no configured C compiler for the race detector.
 
-- Agent/reviewer authorization, host/origin checks, request limits, and sanitized settings.
-- Duplicate submissions and changed content with a reused request ID.
-- Blocking execution before approval and after rejection.
-- Concurrent execution requests resulting in one simulated GitHub creation call.
-- Editing an approved draft revokes approval; earlier approved content stays in history.
-- Provider refusal, truncation, malformed output, HTTP failures, and blocked redirects.
-- Claude and OpenAI request/response contracts using local HTTP test servers.
-- Schema compatibility checks without overwriting an existing schema.
-- OriginChainDB row and SQL adapter contracts using a local HTTP test server.
-- Persistence failure before execution, ambiguous persistence, and failure to record an external result.
-- Simulated GitHub timeout followed by a fresh service instance: no automatic duplicate action; explicit reconciliation verifies an existing issue.
-- Manual proposals, disabled execution, and configuration changes to the destination.
+## Browser evidence and boundaries
 
-These are tests with simulated upstreams. They are not evidence that a live model, cloud account, or GitHub token works.
+Chrome verified reviewer sign-in, real database connection settings, Claude model and three-attempt ceiling, draft review/edit/approval, completed issue link, history, rejection, and state after a process restart. The screenshots show actual application data from this test. Earlier UI checks also exercised a clearly labeled test-only in-memory harness; those are not the evidence for cloud connectivity.
 
-## Browser workflow
-
-Chrome was exercised against an explicit in-memory test harness, which is compiled only during tests. Settings identified **In-memory test fixture**; AI and GitHub credentials were absent, and execution was disabled.
-
-Observed through the browser DOM: reviewer login, inbox selection, original report/draft display, manual proposal creation, approval, editing an approved draft back to `proposed`, saved revision history, rejection, filtering, connection settings, and workspace locking. No real issue was created.
-
-Screenshot capture repeatedly timed out in the browser integration. Visual screenshot review and responsive viewport verification remain incomplete; no screenshot is presented as proof of a live cloud connection.
-
-## Pending real-service verification
-
-| Check | Status |
-| --- | --- |
-| OriginChainDB Cloud Free schema / rows / SQL / restart | Pending existing instance API key |
-| Live Claude structured draft | Pending Claude API key and an account-available model ID |
-| Live OpenAI structured draft | Not run; optional provider adapter only tested locally |
-| Approved real GitHub issue and reconciliation | Not run |
-| GitHub publication / CI result | Not published yet |
-| Linux race detector | Not run locally; Windows host lacks a configured C compiler |
-| Container build / production deployment | Not run; Docker daemon unavailable |
-
-The CI workflow is configured to run the race detector on Linux after publication. A configured workflow is not a successful CI run.
+Responsive viewport checks, production TLS/proxy deployment, backups, and container execution have not been verified. This remains a single-writer internal-tool starter, with shared reviewer-role credentials and no distributed transaction spanning GitHub and the database.
 
 ## Reproduce the cloud test
 
-Prepare the ignored root `.env` with the real Cloud Free endpoint, tenant, existing instance key, application access keys, and repository configuration. Confirm **Free** in the cloud console separately; the data API test cannot prove the account's billing plan.
+Prepare the ignored root `.env` using `.env.example`. Confirm **Free** in the cloud console separately. Use a fresh namespace, synthetic data, and your own provider/repository credentials.
 
 PowerShell:
 
@@ -74,10 +71,12 @@ Shell:
 INBOX_LIVE_TEST=1 go test ./internal/inbox -run '^TestCloudFreeLive$' -v -count=1 -timeout 6m
 ```
 
-The test writes synthetic records into a fresh `inbox_test_...` namespace. It verifies schema registration/reuse, row updates, duplicate submission, SQL listing, state recovery through a fresh client, and rejection. It retains its test rows and never deletes existing data. It does not create a GitHub issue.
+The test writes and retains synthetic records in a fresh `inbox_test_...` namespace. It verifies schema registration/reuse, row updates, duplicate submission, SQL listing, state recovery through a fresh client, and rejection. It never creates a GitHub issue or deletes existing data.
 
-For one real AI draft as well, set `INBOX_LIVE_AI_TEST=1`, `AI_PROVIDER=claude`, `AI_MODEL`, and `ANTHROPIC_API_KEY`. This makes a real billable provider request, saves the draft, then rejects the synthetic action. A successful schema/JSON parse still does not establish factual correctness: inspect the draft against the report.
+For one real AI draft, also set `INBOX_LIVE_AI_TEST=1`, `AI_PROVIDER=claude`, `AI_MODEL`, and `ANTHROPIC_API_KEY`. This makes a billable request, persists the draft, and rejects the synthetic action. The project request ledger is shared with the app; retain it between runs.
 
-For the external side effect, use the running app with execution enabled on a designated demo repository, review a synthetic draft, approve it, execute once, and inspect the created issue. Record the issue URL and tested commit here after success. Verify a rejected proposal produces no issue and that history survives a process restart.
+For GitHub execution, run the app with your repository-scoped token and execution enabled. Review a synthetic proposal, approve it, execute once, and compare the created issue with the approved revision. Reject another action, verify duplicate execution is blocked, and restart the process to check retained state.
 
-Before publication, remove temporary development credentials, inspect the staged files and history for secrets, update this report with observed results, and then publish. Do not mark pending rows as passed based on tests with simulated services.
+`TestLiveRecoveryFromExistingDemoIssue` is a separate explicit opt-in (`INBOX_LIVE_RECOVERY_TEST=1`). It requires access to the already-tested completed action referenced by `live-verification.json` and its GitHub issue. It writes only an isolated recovery fixture and performs a GitHub read. Adapt the receipt to your own test action when reproducing it; it is not a general public-account integration test.
+
+Live tests are skipped by default. Ordinary tests and CI do not spend model credits, require credentials, or create cloud records. Temporary development credentials are removed before publication; `.env`, caches, binaries, and the local usage ledger are excluded from Git.

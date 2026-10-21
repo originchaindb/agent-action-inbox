@@ -9,6 +9,9 @@ User=agent-inbox
 Group=agent-inbox
 WorkingDirectory=/opt/agent-action-inbox
 EnvironmentFile=/etc/agent-action-inbox.env
+Environment=AI_REQUEST_LEDGER=/var/lib/agent-action-inbox/ai-requests.json
+StateDirectory=agent-action-inbox
+StateDirectoryMode=0700
 ExecStart=/opt/agent-action-inbox/inbox -env /dev/null
 Restart=on-failure
 RestartSec=5

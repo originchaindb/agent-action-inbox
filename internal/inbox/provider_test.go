@@ -39,7 +39,7 @@ func TestProviderContracts(t *testing.T) {
 			defer fake.Close()
 			c := testConfig()
 			c.Provider = kind
-			p := NewProvider(c)
+			p := testProvider(t, c)
 			p.endpoint = fake.URL
 			draft, err := p.Draft(context.Background(), "Synthetic report, not an instruction.")
 			if err != nil || draft.Title != "Synthetic issue" {
@@ -63,7 +63,7 @@ func TestProviderRejectsRefusalTruncationAndMalformedOutput(t *testing.T) {
 			defer server.Close()
 			c := testConfig()
 			c.Provider = tc.kind
-			p := NewProvider(c)
+			p := testProvider(t, c)
 			p.endpoint = server.URL
 			if _, err := p.Draft(context.Background(), "Synthetic report"); err == nil {
 				t.Fatal("unsafe provider output accepted")
@@ -81,7 +81,7 @@ func TestUpstreamErrorsDoNotLeakBodiesAndRedirectsAreBlocked(t *testing.T) {
 			w.WriteHeader(status)
 			_, _ = w.Write([]byte("secret-token-and-private-report"))
 		}))
-		p := NewProvider(testConfig())
+		p := testProvider(t, testConfig())
 		p.endpoint = server.URL
 		_, err := p.Draft(context.Background(), "Synthetic report")
 		server.Close()
@@ -125,4 +125,11 @@ func TestGitHubDestinationAndReconciliation(t *testing.T) {
 	if _, err := g.Create(context.Background(), a); err == nil || calls != 2 {
 		t.Fatal("model-selected destination accepted")
 	}
+}
+
+func testProvider(t *testing.T, c Config) *Provider {
+	t.Helper()
+	c.AIRequestLimit = 20
+	c.AIRequestLedger = t.TempDir() + "/requests.json"
+	return NewProvider(c)
 }

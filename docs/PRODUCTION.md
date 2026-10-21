@@ -22,6 +22,8 @@ OC_BEARER=YOUR_INSTANCE_KEY
 AI_PROVIDER=claude
 AI_MODEL=YOUR_AVAILABLE_STRUCTURED_OUTPUT_MODEL
 ANTHROPIC_API_KEY=YOUR_API_KEY
+AI_REQUEST_LIMIT=3
+AI_REQUEST_LEDGER=/var/lib/agent-action-inbox/ai-requests.json
 REVIEWER_TOKEN=YOUR_RANDOM_REVIEWER_SECRET
 AGENT_TOKEN=YOUR_DIFFERENT_RANDOM_AGENT_SECRET
 GITHUB_REPOSITORY=YOUR_OWNER/YOUR_REPOSITORY
@@ -32,6 +34,8 @@ ENABLE_GITHUB_EXECUTION=false
 Replace every placeholder. Use a secrets manager or a server-owned environment file readable only by the service administrator. Keep both app access keys separate; do not put the reviewer key into the AI agent's environment. Restrict the GitHub token to Issues read/write on the selected repository. Add `OC_DB_USER` and `OC_DB_KEY` together only if the database connection requires them.
 
 The report is sent to the chosen model provider. The original report, generated draft, reviewer notes/revisions, and result are stored in OriginChainDB. Approved issue contents are sent to GitHub. Decide what information is appropriate for each destination before submitting real reports. The app does not redact sensitive input automatically.
+
+The durable request ledger reserves one attempt before a provider call. Failed calls retain their reservation. Keep it across restarts and deployments; the default limit of three is for initial verification. An unreadable ledger or an existing `.lock` blocks calls. After a crash, stop all writers and inspect the ledger and provider usage before an operator removes a stale lock. Never delete/reset the counter as an automatic recovery step. This cap covers this application only. For a billing cap, configure a dedicated Claude workspace's [spend limit](https://platform.claude.com/docs/en/manage-claude/workspaces).
 
 In the browser, only the app reviewer access key is entered. It is held in JavaScript memory, not localStorage or cookies. Cloud, provider, and GitHub keys stay on the server. Configuration changes require a restart. Rotate credentials through their owning services, update server secrets, and restart without overlapping processes.
 
@@ -72,10 +76,12 @@ The Dockerfile compiles a static Go binary, copies CA certificates, and runs as 
 
 ```sh
 docker build -t agent-action-inbox:reviewed .
-docker run --name agent-action-inbox \
+docker run --name agent-action-inbox --stop-timeout 145 \
   --read-only --cap-drop ALL --security-opt no-new-privileges \
   --env-file /etc/agent-action-inbox.env \
   -e APP_ADDR=0.0.0.0:8087 \
+  -e AI_REQUEST_LEDGER=/state/ai-requests.json \
+  -v agent-inbox-state:/state \
   -p 127.0.0.1:8087:8087 \
   agent-action-inbox:reviewed
 ```

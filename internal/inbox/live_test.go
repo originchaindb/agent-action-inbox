@@ -21,6 +21,9 @@ func TestCloudFreeLive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if !filepath.IsAbs(c.AIRequestLedger) {
+		c.AIRequestLedger = filepath.Join("..", "..", c.AIRequestLedger)
+	}
 	c.Namespace = "inbox_test_" + randomID()[:12]
 	c.Execute = true
 	db := NewCloud(c)
@@ -32,7 +35,8 @@ func TestCloudFreeLive(t *testing.T) {
 	if err := db.Init(ctx); err != nil {
 		t.Fatal("existing schema verification", err)
 	}
-	s := NewService(c, db, NewProvider(c), &fakeGitHub{})
+	liveProvider := NewProvider(c)
+	s := NewService(c, db, liveProvider, &fakeGitHub{})
 	p := Proposal{RequestID: "cloud-smoke-" + randomID(), Report: "Synthetic verification: a staging CSV export ignores its date filter.", Draft: &Draft{Title: "Synthetic cloud test: filtered CSV export", Body: "Test-only data. Observed: staging export ignores its filter. Missing: confirmed build and reproduction steps.", Rationale: "No customer data."}}
 	a, err := s.Propose(ctx, p, "agent")
 	if err != nil {
@@ -73,5 +77,6 @@ func TestCloudFreeLive(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Log("PASS: real configured AI provider produced a structured draft, saved to Cloud Free for review")
+		t.Logf("Provider usage: input_tokens=%d output_tokens=%d", liveProvider.lastUsage.Input, liveProvider.lastUsage.Output)
 	}
 }

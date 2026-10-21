@@ -1,0 +1,29 @@
+{
+  "verified_at": "2026-10-21T15:33:20.851943+05:30",
+  "database": "OriginChainDB Cloud Free (plan separately confirmed in console)",
+  "model": "claude-haiku-4-5-20251001",
+  "synthetic_issue_url": "https://github.com/originchaindb/agent-action-inbox/issues/1",
+  "action_id": "36d81741e07bcd1429c469992c68594b",
+  "checks": {
+    "cloud_review_history": true,
+    "approved_revision_matches_github": true,
+    "duplicate_execution_blocked": true,
+    "duplicate_submission_reused": true,
+    "agent_approval_forbidden": true,
+    "agent_inbox_read_forbidden": true,
+    "rejected_action_not_executed": true,
+    "exactly_one_demo_issue_observed": true,
+    "process_restart_preserved_actions": true,
+    "isolated_lost_result_reconciled_with_real_github_and_cloud": true,
+    "persistent_ai_ceiling_preserved": true
+  },
+  "ai_usage": {
+    "requests": 2,
+    "input_tokens": 790,
+    "output_tokens": 742,
+    "estimated_usd": 0.0045,
+    "user_limit_usd": 10,
+    "persistent_request_ceiling": 3,
+    "account_wide_billing_cap_changed": false
+  }
+}

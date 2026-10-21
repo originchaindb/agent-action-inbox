@@ -2,7 +2,9 @@
 
 A small Go service that turns bug reports into **reviewable GitHub issue proposals** using Claude or OpenAI. A person edits and approves the draft before a separate execution step creates the issue. OriginChainDB Cloud stores the action, its reviewed revisions, and the outcome.
 
-**Development preview:** local tests pass. Live Claude, OriginChainDB Cloud Free, and GitHub creation are still awaiting verification for this project. See [verification status](docs/VERIFICATION.md). There is no hosted public demo yet.
+**Verified on 21 October 2026:** real Claude API drafting, OriginChainDB **Cloud Free** persistence, and an approved [GitHub issue](https://github.com/originchaindb/agent-action-inbox/issues/1). Restart, rejection, duplicate-execution, and reconciliation checks passed. See the [test report](docs/VERIFICATION.md) and [sanitized receipt](docs/live-verification.json). The application was run locally against cloud services; there is no hosted public demo yet.
+
+![Completed Claude proposal in the live cloud-backed review inbox](docs/live-inbox.jpg)
 
 ## Why build this?
 
@@ -44,9 +46,11 @@ flowchart LR
 
 You need Go 1.24 or newer (development checks use Go 1.26.2), an [OriginChainDB Cloud Free instance](https://app.originchaindb.com/instances), and API access to your chosen model provider. Provider API usage and application hosting are separate from the database's free plan. Check current account limits in the console and [pricing page](https://originchaindb.com/pricing).
 
-From this checkout:
+Clone the starter:
 
 ```sh
+git clone https://github.com/originchaindb/agent-action-inbox.git
+cd agent-action-inbox
 cp .env.example .env
 go mod download
 ```
@@ -60,15 +64,19 @@ On Windows, use `Copy-Item .env.example .env`. Edit the ignored `.env` file loca
 | `OC_BEARER` | Existing instance API key |
 | `OC_NAMESPACE` | A fresh application namespace; keep it stable across restarts |
 | `AI_PROVIDER` | `claude` (default) or `openai` |
-| `AI_MODEL` | A model available to your API account that supports structured outputs |
+| `AI_MODEL` | Tested: `claude-haiku-4-5-20251001`; confirm availability in your API account |
 | `ANTHROPIC_API_KEY` | Claude API key when using Claude |
 | `OPENAI_API_KEY` | OpenAI API key when using OpenAI |
 | `GITHUB_REPOSITORY` | `owner/demo-repository`, controlled by you |
 | `REVIEWER_TOKEN` / `AGENT_TOKEN` | Two different random secrets, each at least 32 characters |
+| `AI_REQUEST_LIMIT` | Maximum provider attempts; defaults to 3 for initial verification |
+| `AI_REQUEST_LEDGER` | Persistent local counter file; defaults to `.local/ai-requests.json` |
 
 Run `go run ./cmd/keygen` twice in your own terminal to generate the two app access keys. Copy each result into the appropriate setting; do not commit or share them. Provider keys belong in server configuration, never in browser JavaScript or an agent's prompt.
 
 Leave `ENABLE_GITHUB_EXECUTION=false` initially. A missing AI key/model disables AI drafting; you can still submit a manual draft and exercise human review against your cloud database.
+
+The request ceiling counts attempts **before** sending them, including failures, and survives restarts when the ledger is retained. Reaching it blocks another provider call. This is a request cap, not an account-wide dollar cap: set a provider [workspace spend limit](https://platform.claude.com/docs/en/manage-claude/workspaces) for billing enforcement, and only raise the request limit after reviewing model costs. Do not delete the ledger to recover from an uncertain request.
 
 ```sh
 go run ./cmd/inbox
@@ -93,6 +101,8 @@ Send `POST /api/actions` with `Authorization: Bearer <AGENT_TOKEN>` and a stable
 See [the API examples](docs/API.md). Any Python, Rust, or Go agent that can make an HTTP request can use this interface.
 
 ## Tests and limits
+
+The live test demonstrated why review matters: Claude suggested reproduction steps that the source report did not establish. The reviewer removed them before approving the issue; both the generated draft and the approved revision remain in the database history. Structured JSON makes output parseable, not necessarily correct.
 
 ```sh
 go test ./...
